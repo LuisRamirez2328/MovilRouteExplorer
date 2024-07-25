@@ -1,16 +1,61 @@
 import 'package:flutter/material.dart';
-import 'interest_zones_page.dart'; // Importa la página de zonas de interés
-import 'search_routes_page.dart'; // Importa la nueva página
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'interest_zones_page.dart';
+import 'search_routes_page.dart';
+import 'update_profile_page.dart';
 
-class HomeWelcomePage extends StatelessWidget {
+class HomeWelcomePage extends StatefulWidget {
   final String userName;
+  final String userId;
+  final String token;
 
-  const HomeWelcomePage({super.key, required this.userName});
+  const HomeWelcomePage({
+    Key? key,
+    required this.userName,
+    required this.userId,
+    required this.token
+  }) : super(key: key);
+
+  @override
+  _HomeWelcomePageState createState() => _HomeWelcomePageState();
+}
+
+class _HomeWelcomePageState extends State<HomeWelcomePage> {
+  late String _userName;
+  String? _userImageUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _userName = widget.userName;
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final url = Uri.parse('http://34.202.178.210:3000/api/users/${widget.userId}');
+    try {
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+
+      if (response.statusCode == 200) {
+        final userData = json.decode(response.body);
+        setState(() {
+          _userName = userData['nombreCompleto'];
+          _userImageUrl = userData['image'];
+        });
+      }
+    } catch (e) {
+      print('Error loading user data: $e');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Fondo blanco para el cuerpo
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Color(0xFF27AE60),
         elevation: 0,
@@ -22,13 +67,37 @@ class HomeWelcomePage extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Icon(Icons.account_circle, size: 40, color: Colors.black),
-                SizedBox(width: 8),
-                Text(userName, style: TextStyle(fontSize: 16, color: Colors.black)),
-              ],
+            GestureDetector(
+              onTap: () async {
+                final result = await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UpdateProfilePage(
+                      userId: widget.userId,
+                      token: widget.token,
+                    ),
+                  ),
+                );
+                if (result != null) {
+                  _loadUserData();
+                }
+              },
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  CircleAvatar(
+                    radius: 20,
+                    backgroundImage: _userImageUrl != null
+                        ? NetworkImage(_userImageUrl!)
+                        : null,
+                    child: _userImageUrl == null
+                        ? Icon(Icons.person, size: 30, color: Colors.white)
+                        : null,
+                  ),
+                  SizedBox(width: 8),
+                  Text(_userName, style: TextStyle(fontSize: 16, color: Colors.black)),
+                ],
+              ),
             ),
             const SizedBox(height: 20),
             const Text(
@@ -47,7 +116,6 @@ class HomeWelcomePage extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      // Navegar a la página de buscar rutas
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const SearchRoutesPage()),
@@ -64,7 +132,7 @@ class HomeWelcomePage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Image.asset(
-                            'assets/bus.png', // Ruta de tu imagen
+                            'assets/bus.png',
                             height: 50,
                           ),
                           const SizedBox(height: 10),
@@ -78,7 +146,6 @@ class HomeWelcomePage extends StatelessWidget {
                 Expanded(
                   child: GestureDetector(
                     onTap: () {
-                      // Navegar a la página de Zonas de interés
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => const InterestZonesPage()),
@@ -95,11 +162,11 @@ class HomeWelcomePage extends StatelessWidget {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Image.asset(
-                            'assets/places.png', // Ruta de tu imagen
+                            'assets/places.png',
                             height: 50,
                           ),
                           const SizedBox(height: 10),
-                          const Text('Zonas de interés', style: TextStyle(fontSize: 16, color: Colors.black)),
+                          const Text('Zonas de interes', style: TextStyle(fontSize: 16, color: Colors.black)),
                           const Icon(Icons.arrow_forward, color: Colors.black),
                         ],
                       ),

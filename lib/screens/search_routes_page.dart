@@ -4,13 +4,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
+
 class SearchRoutesPage extends StatefulWidget {
   const SearchRoutesPage({Key? key}) : super(key: key);
 
   @override
   _SearchRoutesPageState createState() => _SearchRoutesPageState();
 }
-
 class _SearchRoutesPageState extends State<SearchRoutesPage> {
   final Completer<GoogleMapController> _controller = Completer();
   Set<Polyline> _polylines = {};
@@ -544,6 +544,7 @@ class _SearchRoutesPageState extends State<SearchRoutesPage> {
 
     final points = routeCoordinates[routeName]!;
     final List<LatLng> polylineCoordinates = await _getRoutePolyline(points[0], points[1]);
+    polylineCoordinates.addAll(points.reversed);
     _setPolylines(polylineCoordinates);
     _addMarkers(points);
   }
@@ -581,17 +582,9 @@ class _SearchRoutesPageState extends State<SearchRoutesPage> {
       _polylines.clear();
       _polylines.add(
         Polyline(
-          polylineId: PolylineId('route_outbound'),
+          polylineId: PolylineId('route'),
           color: Colors.red,
           points: points,
-          width: 5,
-        ),
-      );
-      _polylines.add(
-        Polyline(
-          polylineId: PolylineId('route_inbound'),
-          color: Colors.blue,
-          points: points.reversed.toList(),
           width: 5,
         ),
       );

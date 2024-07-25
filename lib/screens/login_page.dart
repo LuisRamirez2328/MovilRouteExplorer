@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'home_welcome_page.dart'; // Importa la nueva página
+import 'home_welcome_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,7 +15,7 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController passwordController = TextEditingController();
   bool _isLoading = false;
 
-  void _showSuccessDialog(BuildContext context, String userName) {
+  void _showSuccessDialog(BuildContext context, String userName, String userId, String token) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -29,7 +29,13 @@ class _LoginPageState extends State<LoginPage> {
                 Navigator.of(context).pop();
                 Navigator.pushReplacement(
                   context,
-                  MaterialPageRoute(builder: (context) => HomeWelcomePage(userName: userName)),
+                  MaterialPageRoute(
+                    builder: (context) => HomeWelcomePage(
+                      userName: userName,
+                      userId: userId,
+                      token: token,
+                    ),
+                  ),
                 );
               },
             ),
@@ -68,7 +74,7 @@ class _LoginPageState extends State<LoginPage> {
     });
 
     try {
-      final url = Uri.parse('http://34.202.178.210:3000/api/users/login'); // Reemplaza con tu URL
+      final url = Uri.parse('http://34.202.178.210:3000/api/users/login');
       final response = await http.post(
         url,
         headers: <String, String>{
@@ -87,7 +93,6 @@ class _LoginPageState extends State<LoginPage> {
         final responseBody = json.decode(response.body);
         final String token = responseBody['token'];
 
-        // Get user info
         final userInfoUrl = Uri.parse('http://34.202.178.210:3000/api/users/email/$email');
         final userInfoResponse = await http.get(
           userInfoUrl,
@@ -99,7 +104,8 @@ class _LoginPageState extends State<LoginPage> {
         if (userInfoResponse.statusCode == 200) {
           final user = json.decode(userInfoResponse.body);
           final String userName = user['nombreCompleto'];
-          _showSuccessDialog(context, userName);
+          final String userId = user['id'].toString();
+          _showSuccessDialog(context, userName, userId, token);
         } else {
           _showErrorDialog(context, 'No se pudo obtener la información del usuario');
         }
@@ -119,7 +125,7 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Fondo blanco para el cuerpo
+      backgroundColor: Colors.white,
       appBar: AppBar(
         backgroundColor: Color(0xFF27AE60),
         elevation: 0,
@@ -134,7 +140,7 @@ class _LoginPageState extends State<LoginPage> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
-                  const SizedBox(height: 80), // Ajusta el espacio superior
+                  const SizedBox(height: 80),
                   Container(
                     height: 100,
                     decoration: BoxDecoration(
@@ -151,7 +157,7 @@ class _LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                       labelText: 'Correo electrónico',
-                      prefixIcon: Icon(Icons.email), // Icono de email
+                      prefixIcon: Icon(Icons.email),
                       filled: true,
                       fillColor: Colors.white70,
                     ),
@@ -164,7 +170,7 @@ class _LoginPageState extends State<LoginPage> {
                         borderRadius: BorderRadius.circular(30),
                       ),
                       labelText: 'Contraseña',
-                      prefixIcon: Icon(Icons.lock), // Icono de candado
+                      prefixIcon: Icon(Icons.lock),
                       filled: true,
                       fillColor: Colors.white70,
                     ),
@@ -175,7 +181,7 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Checkbox(
-                        value: true, // Añadir lógica para gestionar este estado
+                        value: true,
                         onChanged: (bool? value) {},
                         activeColor: Color(0xFF27AE60),
                       ),
@@ -186,19 +192,19 @@ class _LoginPageState extends State<LoginPage> {
                   ElevatedButton(
                     onPressed: _loginUser,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Color(0xFF27AE60), // Color de fondo del botón verde
-                      foregroundColor: Colors.white, // Color del texto del botón blanco
-                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15), // Ajusta el padding del botón
+                      backgroundColor: Color(0xFF27AE60),
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(horizontal: 50, vertical: 15),
                       textStyle: const TextStyle(fontSize: 18),
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(30), // Botón más redondeado
+                        borderRadius: BorderRadius.circular(30),
                       ),
                     ),
                     child: const Text('INICIAR'),
                   ),
-                  const SizedBox(height: 20), // Espacio adicional para separar el botón de los comentarios
+                  const SizedBox(height: 20),
                   TextButton(
-                    onPressed: () {}, // Añadir lógica para recuperar contraseña
+                    onPressed: () {},
                     child: Text(
                       '¿Olvidaste tu contraseña?',
                       style: TextStyle(color: Colors.blue),

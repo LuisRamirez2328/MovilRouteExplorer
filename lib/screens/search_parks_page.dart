@@ -24,7 +24,7 @@ class _SearchParksPageState extends State<SearchParksPage> {
   final Map<String, List<String>> parksAndRoutes = {
     'Parque de la Marimba': ['Ruta1', 'Ruta2'],
     'Parque Central': ['Ruta3', 'Ruta4'],
-    'Parque Joyyo Mayu': ['Ruta5', 'Ruta6'],
+    'Parque Joyyo Mayu': ['Ruta1', 'Ruta5'],
   };
 
   final Map<String, List<LatLng>> routeCoordinates = {
